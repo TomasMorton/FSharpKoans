@@ -27,6 +27,7 @@ open FSharpKoans.Core
 //---------------------------------------------------------------
 [<Koan(Sort = 15)>]
 module ``about the stock example`` =
+    open System.Globalization
     
     let stockData =
         [ "Date,Open,High,Low,Close,Volume,Adj Close";
@@ -58,8 +59,52 @@ module ``about the stock example`` =
     // tests for yourself along the way. You can also try 
     // using the F# Interactive window to check your progress.
 
+    let splitByComma (x:string) =
+        x.Split ','
+    
+    let getDate (stockDataString:string[]) =
+        stockDataString.[0]
+    
+    let getStockPrice priceString =
+        System.Double.Parse(priceString, CultureInfo.InvariantCulture)
+    
+    let getOpeningPrice (stockDataString:string[]) =
+        let priceString = stockDataString.[1]
+        getStockPrice priceString
+        
+    let getClosingPrice (stockDataString:string[]) =
+        let priceString = stockDataString.[4]
+        getStockPrice priceString
+    
+    let getPriceDifference price1 price2 =
+        let diff = price1 - price2
+        abs diff
+    
+    let getStockData stockData =
+        let parsed =
+            splitByComma stockData
+        
+        let date = getDate parsed
+        let openingPrice = getOpeningPrice parsed
+        let closingPrice = getClosingPrice parsed
+        let difference = getPriceDifference openingPrice closingPrice
+        
+        (date, difference)
+
+    [<Koan>]
+    let SplitByCommaHasRightLength =
+        let testData = stockData.[1]
+        let result = splitByComma testData
+        
+        AssertEquality 7 result.Length
+    
     [<Koan>]
     let YouGotTheAnswerCorrect() =
-        let result =  __
+        let result =
+            stockData
+            |> Seq.skip 1
+            |> Seq.map getStockData
+            |> Seq.maxBy (fun x -> snd x)
+            |> fst
         
         AssertEquality "2012-03-13" result
